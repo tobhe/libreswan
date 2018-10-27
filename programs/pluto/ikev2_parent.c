@@ -1892,6 +1892,10 @@ stf_status ikev2_parent_inR1outI2(struct state *st, struct msg_digest *md)
 			st->st_seen_fragvid = TRUE;
 			break;
 
+		case v2N_AUX_EXCHANGE_SUPPORTED:
+			st->st_seen_aux = TRUE;
+			break;
+
 		case v2N_USE_PPK:
 			st->st_seen_ppk = TRUE;
 			break;
