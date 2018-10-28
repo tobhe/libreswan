@@ -1066,7 +1066,9 @@ static stf_status ikev2_parent_outI1_common(struct msg_digest *md UNUSED,
 	}
 
 	/* Send AUX support notification */
-	if (c->policy & POLICY_IKE_AUX_ALLOW) {
+	libreswan_log("Checking AUX config");
+	if (c->policy & POLICY_IKE_AUX) {
+		libreswan_log("Building AUX notification payload");
 		if (!ship_v2Ns(ISAKMP_NEXT_v2N,
 			        v2N_IKEV2_AUX_SUPPORTED,
 			        &rbody))

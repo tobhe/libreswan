@@ -1689,7 +1689,6 @@ static const char *const ikev2_notify_name_16384[] = {
 	"v2N_USE_PPK", /* 16435 */
 	"v2N_PPK_IDENTITY",
 	"v2N_NO_PPK_AUTH",
-	"v2N_IKEV2_AUX_SUPPORTED", /* 16438 */
 };
 
 static enum_names ikev2_notify_names_16384 = {
@@ -2151,7 +2150,7 @@ const char *enum_name(enum_names *ed, unsigned long val)
 	enum_names  *p;
 
 	for (p = ed; p != NULL; p = p->en_next_range) {
-		passert(p->en_last - p->en_first + 1 == p->en_checklen);
+			passert(p->en_last - p->en_first + 1 == p->en_checklen);
 		if (p->en_first <= val && val <= p->en_last)
 			return p->en_names[val - p->en_first];
 	}
