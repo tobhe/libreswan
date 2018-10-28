@@ -155,7 +155,7 @@ enum keyword_numeric_config_field {
 	KBF_XAUTHBY,            /* method of xauth user auth - file, pam or alwaysok */
 	KBF_XAUTHFAIL,          /* method of failing, soft or hard */
 	KBF_IKE_FRAG,		/* Enable support for IKE fragmentation */
-	KBF_IKE_AUX,    /* Enable support for IKE_AUX exchange */
+	KBF_IKE_AUX,		/* Enable support for IKE_AUX exchange */
 	KBF_NAT_KEEPALIVE,      /* per conn enabling/disabling of sending keep-alives */
 	KBF_INITIAL_CONTACT,	/* send initial contact VID */
 	KBF_CISCO_UNITY,	/* send cisco unity VID */

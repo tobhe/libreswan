@@ -2150,7 +2150,7 @@ const char *enum_name(enum_names *ed, unsigned long val)
 	enum_names  *p;
 
 	for (p = ed; p != NULL; p = p->en_next_range) {
-			passert(p->en_last - p->en_first + 1 == p->en_checklen);
+		passert(p->en_last - p->en_first + 1 == p->en_checklen);
 		if (p->en_first <= val && val <= p->en_last)
 			return p->en_names[val - p->en_first];
 	}
