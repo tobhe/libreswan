@@ -797,6 +797,7 @@ enum isakmp_xchg_types {
 	ISAKMP_v2_GSA_REGISTRATION = 40, /* draft-yeung-g-ikev2 */
 	ISAKMP_v2_GSA_REKEY = 41, /* draft-yeung-g-ikev2 */
 	/* 42 - 239 Unassigned */
+  ISAKMP_v2_AUX = 239, /* draft-smyslov-ipsecme-ikev2-aux-01 (placeholder value) */
 	/* 240 - 255 Private Use */
 
 	/* libreswan private use */

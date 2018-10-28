@@ -728,6 +728,75 @@ static bool id_ipseckey_allowed(struct state *st, enum ikev2_auth_method atype)
 	});
 	return FALSE;
 }
+/*
+ *
+ ***************************************************************
+ *****                   AUX                               *****
+ ***************************************************************
+ *
+ */
+void ikev2_parent_out_A(struct state *st,
+												struct msg_digest *md);
+
+void ikev2_parent_out_A(struct state *st,
+												struct msg_digest *md)
+{
+
+	/* responder allows aux exchange */
+	passert(st->st_seen_aux);
+
+	// Get ppk as placeholder value to send in aux
+	stf_status res = STF_OK;
+
+	/* Build header in new buffer */
+	init_out_pbs(&reply_stream, reply_buffer, sizeof(reply_buffer),
+							 "reply packet");
+
+	pb_stream rbody = open_v2_message(&reply_stream,
+																	 ike_sa(st),
+																	 NULL, /* request */
+																	 ISAKMP_v2_AUX);
+	if (!pbs_ok(&rbody)) {
+		res = STF_INTERNAL_ERROR;
+	}
+
+	/* insert an Encryption payload header (SK) */
+	v2SK_payload_t sk = open_v2SK_payload(&rbody, ike_sa(st));
+	if (!pbs_ok(&sk.pbs)) {
+		res =	 STF_INTERNAL_ERROR;
+	}
+
+	/* Actual data in SK */
+
+	/* send ppk id (this is only a placeholder for possible usefult things to send) */
+	if (st->st_seen_ppk) {
+		int np = ISAKMP_NEXT_v2NONE;
+
+		struct ppk_id_payload ppk_id_p;
+		chunk_t notify_data = create_unified_ppk_id(&ppk_id_p);
+
+		if (!ship_v2Nsp(np, v2N_PPK_IDENTITY, &notify_data,
+										&sk.pbs))
+			res =	 STF_INTERNAL_ERROR;
+		freeanychunk(notify_data);
+	}
+
+	/* close Encryption payload header (SK) */
+	if (!close_v2SK_payload(&sk)) {
+		res = STF_INTERNAL_ERROR;
+	}
+	close_output_pbs(&rbody);
+	close_output_pbs(&reply_stream);
+
+	// Transmit packet
+	record_outbound_ike_msg(st, &reply_stream, "reply packet for ikev2_parent_outA");
+
+	reset_cur_state();
+
+	// State transmission (this is not going to work in the current form)
+	complete_v2_state_transition(&md, res);
+}
+
 
 /*
  *
