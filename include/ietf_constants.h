@@ -1579,7 +1579,7 @@ typedef enum {
 
 	v2N_STATUS_PSTATS_ROOF, /* used to cap status statistics array */
 
-	/* 16438 - 40969 Unassigned */
+	/* 16439 - 40969 Unassigned */
 
 	v2N_NULL_AUTH = 40960,
 
