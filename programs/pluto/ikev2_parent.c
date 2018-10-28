@@ -1066,9 +1066,7 @@ static stf_status ikev2_parent_outI1_common(struct msg_digest *md UNUSED,
 	}
 
 	/* Send AUX support notification */
-	libreswan_log("Checking AUX config");
 	if (c->policy & POLICY_IKE_AUX) {
-		libreswan_log("Building AUX notification payload");
 		if (!ship_v2Ns(ISAKMP_NEXT_v2N,
 			        v2N_IKEV2_AUX_SUPPORTED,
 			        &rbody))
@@ -1387,7 +1385,6 @@ stf_status ikev2_parent_inI1outR1(struct state *null_st, struct msg_digest *md)
 			st->st_seen_aux = TRUE;
 			break;
 
-
 		case v2N_USE_PPK:
 			st->st_seen_ppk = TRUE;
 			break;
@@ -1562,6 +1559,14 @@ static stf_status ikev2_parent_inI1outR1_continue_tail(struct state *st,
 
 		if (!ship_v2Ns(np, v2N_IKEV2_FRAGMENTATION_SUPPORTED, &rbody))
 			return STF_INTERNAL_ERROR;
+	}
+
+	/* Send AUX support notification */
+	if (c->policy & POLICY_IKE_AUX) {
+			if (!ship_v2Ns(ISAKMP_NEXT_v2N,
+										 v2N_IKEV2_AUX_SUPPORTED,
+										 &rbody))
+					return STF_INTERNAL_ERROR;
 	}
 
 	/* Send USE_PPK Notify payload */
