@@ -1689,6 +1689,7 @@ static const char *const ikev2_notify_name_16384[] = {
 	"v2N_USE_PPK", /* 16435 */
 	"v2N_PPK_IDENTITY",
 	"v2N_NO_PPK_AUTH",
+  "v2N_IKEV2_AUX_SUPPORTED",
 };
 
 static enum_names ikev2_notify_names_16384 = {

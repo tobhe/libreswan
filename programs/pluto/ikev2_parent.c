@@ -735,12 +735,10 @@ static bool id_ipseckey_allowed(struct state *st, enum ikev2_auth_method atype)
  ***************************************************************
  *
  */
-void ikev2_parent_out_A(struct state *st,
-												struct msg_digest *md);
-
-void ikev2_parent_out_A(struct state *st,
+stf_status ikev2_parent_out_A(struct state *st,
 												struct msg_digest *md)
 {
+  (void) md;
 
 	/* responder allows aux exchange */
 	passert(st->st_seen_aux);
@@ -794,7 +792,7 @@ void ikev2_parent_out_A(struct state *st,
 	reset_cur_state();
 
 	// State transmission (this is not going to work in the current form)
-	complete_v2_state_transition(&md, res);
+	return res;
 }
 
 
@@ -1067,11 +1065,20 @@ static stf_status ikev2_parent_outI1_common(struct msg_digest *md UNUSED,
 			return STF_INTERNAL_ERROR;
 	}
 
+	/* Send AUX support notification */
+	if (c->policy & POLICY_IKE_AUX_ALLOW) {
+		if (!ship_v2Ns(ISAKMP_NEXT_v2N,
+			        v2N_IKEV2_AUX_SUPPORTED,
+			        &rbody))
+			return STF_INTERNAL_ERROR;
+	}
+
 	/* Send USE_PPK Notify payload */
 	if (LIN(POLICY_PPK_ALLOW, c->policy)) {
 		if (!ship_v2Ns(ISAKMP_NEXT_v2N, v2N_USE_PPK, &rbody))
 			return STF_INTERNAL_ERROR;
 	}
+
 
 	/* Send SIGNATURE_HASH_ALGORITHMS Notify payload */
 	if (!IMPAIR(OMIT_HASH_NOTIFY_REQUEST)) {
@@ -1961,7 +1968,7 @@ stf_status ikev2_parent_inR1outI2(struct state *st, struct msg_digest *md)
 			st->st_seen_fragvid = TRUE;
 			break;
 
-		case v2N_AUX_EXCHANGE_SUPPORTED:
+		case v2N_IKEV2_AUX_SUPPORTED:
 			st->st_seen_aux = TRUE;
 			break;
 
