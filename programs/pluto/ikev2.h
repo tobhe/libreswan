@@ -54,7 +54,6 @@ extern ikev2_state_transition_fn ikev2_ike_sa_process_auth_request_no_skeyid;
 extern ikev2_state_transition_fn ikev2_ike_sa_process_auth_request;
 extern ikev2_state_transition_fn ikev2_parent_inR1outI2;
 extern ikev2_state_transition_fn ikev2_parent_inR2;
-extern ikev2_state_transition_fn ikev2_parent_out_A;
 
 extern crypto_transition_fn ikev2_child_out_cont;
 extern crypto_transition_fn ikev2_child_inR_tail;

@@ -735,16 +735,13 @@ static bool id_ipseckey_allowed(struct state *st, enum ikev2_auth_method atype)
  ***************************************************************
  *
  */
-stf_status ikev2_parent_out_A(struct state *st,
-												struct msg_digest *md)
+stf_status ikev2_parent_out_A(struct state *st);
+
+stf_status ikev2_parent_out_A(struct state *st)
 {
-  (void) md;
 
 	/* responder allows aux exchange */
 	passert(st->st_seen_aux);
-
-	// Get ppk as placeholder value to send in aux
-	stf_status res = STF_OK;
 
 	/* Build header in new buffer */
 	init_out_pbs(&reply_stream, reply_buffer, sizeof(reply_buffer),
@@ -755,13 +752,13 @@ stf_status ikev2_parent_out_A(struct state *st,
 																	 NULL, /* request */
 																	 ISAKMP_v2_AUX);
 	if (!pbs_ok(&rbody)) {
-		res = STF_INTERNAL_ERROR;
+		return STF_INTERNAL_ERROR;
 	}
 
 	/* insert an Encryption payload header (SK) */
 	v2SK_payload_t sk = open_v2SK_payload(&rbody, ike_sa(st));
 	if (!pbs_ok(&sk.pbs)) {
-		res =	 STF_INTERNAL_ERROR;
+		return STF_INTERNAL_ERROR;
 	}
 
 	/* Actual data in SK */
@@ -775,13 +772,13 @@ stf_status ikev2_parent_out_A(struct state *st,
 
 		if (!ship_v2Nsp(np, v2N_PPK_IDENTITY, &notify_data,
 										&sk.pbs))
-			res =	 STF_INTERNAL_ERROR;
+			return STF_INTERNAL_ERROR;
 		freeanychunk(notify_data);
 	}
 
 	/* close Encryption payload header (SK) */
 	if (!close_v2SK_payload(&sk)) {
-		res = STF_INTERNAL_ERROR;
+		return STF_INTERNAL_ERROR;
 	}
 	close_output_pbs(&rbody);
 	close_output_pbs(&reply_stream);
@@ -792,7 +789,7 @@ stf_status ikev2_parent_out_A(struct state *st,
 	reset_cur_state();
 
 	// State transmission (this is not going to work in the current form)
-	return res;
+	return STF_OK;
 }
 
 
@@ -2084,6 +2081,13 @@ static void ikev2_parent_inR1outI2_continue(struct state *st,
 			st->st_serialno));
 
 	passert(*mdp != NULL);
+
+	// XXX: Not sure if this belongs here
+	if (st->st_seen_aux) {
+		change_state(st, STATE_PARENT_IA);
+		complete_v2_state_transition(mdp->st, mdp, ikev2_parent_out_A(st));
+	}
+
 	stf_status e = ikev2_parent_inR1outI2_tail(st, *mdp, r);
 	/* replace (*mdp)->st with st ... */
 	complete_v2_state_transition((*mdp)->st, mdp, e);

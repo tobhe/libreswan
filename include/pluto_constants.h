@@ -596,6 +596,7 @@ enum state_kind {
 	/* INITIATOR states */
 	/* STATE_PARENT_I0,	** waiting for KE to finish */
 	STATE_PARENT_I1,        /* IKE_SA_INIT: sent initial message, waiting for reply */
+	STATE_PARENT_IA,        /* IKE_AUX: sent aux message, waiting for reply */
 	STATE_PARENT_I2,        /* IKE_AUTH: sent auth message, waiting for reply */
 	STATE_PARENT_I3,        /* IKE_AUTH done: received auth response */
 
