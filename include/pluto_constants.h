@@ -608,6 +608,7 @@ enum state_kind {
 	 */
 	/* STATE_PARENT_R0,	** just starting */
 	STATE_PARENT_R1,	/* IKE_SA_INIT: sent response */
+	STATE_PARENT_RA,	/* IKE_AUX: sent response */
 	STATE_PARENT_R2,	/* IKE_AUTH: sent response */
 
 	/* IKEv2 CREATE_CHILD_SA INITIATOR states */

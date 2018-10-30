@@ -415,6 +415,16 @@ static /*const*/ struct state_v2_microcode v2_state_microcode_table[] = {
 	  .recv_type  = ISAKMP_v2_SA_INIT,
 	  .timeout_event = EVENT_v2_RESPONDER_TIMEOUT, },
 
+	{ .story      = "Responder: process AUX request",
+	  .state      = STATE_PARENT_RA,
+	  .next_state = STATE_PARENT_R1,
+	  .flags = SMF2_IKE_I_SET | SMF2_MSG_R_CLEAR | SMF2_SEND,
+	  .req_clear_payloads = P(SK),
+	  .req_enc_payloads = P(N),
+	  .processor  = ikev2_parent_in_A,
+	  .recv_type  = ISAKMP_v2_AUX,
+	  .timeout_event = EVENT_v2_RESPONDER_TIMEOUT, },
+
 	/* STATE_PARENT_R1: I2 --> R2
 	 *                  <-- HDR, SK {IDi, [CERT,] [CERTREQ,]
 	 *                             [IDr,] AUTH, SAi2,

@@ -792,6 +792,15 @@ stf_status ikev2_parent_out_A(struct state *st)
 	return STF_OK;
 }
 
+stf_status ikev2_parent_in_A(struct state *st, struct msg_digest *md)
+{
+	(void) st;
+	(void) md;
+
+	// XXX: do something useful maybe
+	return STF_OK;
+}
+
 
 /*
  *
