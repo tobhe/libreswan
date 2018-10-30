@@ -728,6 +728,79 @@ static bool id_ipseckey_allowed(struct state *st, enum ikev2_auth_method atype)
 	});
 	return FALSE;
 }
+/*
+ *
+ ***************************************************************
+ *****                   AUX                               *****
+ ***************************************************************
+ *
+ */
+stf_status ikev2_parent_out_A(struct state *st);
+
+stf_status ikev2_parent_out_A(struct state *st)
+{
+
+	/* responder allows aux exchange */
+	passert(st->st_seen_aux);
+
+	/* Build header in new buffer */
+	init_out_pbs(&reply_stream, reply_buffer, sizeof(reply_buffer),
+							 "reply packet");
+
+	pb_stream rbody = open_v2_message(&reply_stream,
+																	 ike_sa(st),
+																	 NULL, /* request */
+																	 ISAKMP_v2_AUX);
+	if (!pbs_ok(&rbody)) {
+		return STF_INTERNAL_ERROR;
+	}
+
+	/* insert an Encryption payload header (SK) */
+	v2SK_payload_t sk = open_v2SK_payload(&rbody, ike_sa(st));
+	if (!pbs_ok(&sk.pbs)) {
+		return STF_INTERNAL_ERROR;
+	}
+
+	/* Actual data in SK */
+
+	/* send ppk id (this is only a placeholder for possible usefult things to send) */
+	if (st->st_seen_ppk) {
+		int np = ISAKMP_NEXT_v2NONE;
+
+		struct ppk_id_payload ppk_id_p;
+		chunk_t notify_data = create_unified_ppk_id(&ppk_id_p);
+
+		if (!ship_v2Nsp(np, v2N_PPK_IDENTITY, &notify_data,
+										&sk.pbs))
+			return STF_INTERNAL_ERROR;
+		freeanychunk(notify_data);
+	}
+
+	/* close Encryption payload header (SK) */
+	if (!close_v2SK_payload(&sk)) {
+		return STF_INTERNAL_ERROR;
+	}
+	close_output_pbs(&rbody);
+	close_output_pbs(&reply_stream);
+
+	// Transmit packet
+	record_outbound_ike_msg(st, &reply_stream, "reply packet for ikev2_parent_outA");
+
+	reset_cur_state();
+
+	// State transmission (this is not going to work in the current form)
+	return STF_OK;
+}
+
+stf_status ikev2_parent_in_A(struct state *st, struct msg_digest *md)
+{
+	(void) st;
+	(void) md;
+
+	// XXX: do something useful maybe
+	return STF_OK;
+}
+
 
 /*
  *
@@ -998,11 +1071,20 @@ static stf_status ikev2_parent_outI1_common(struct msg_digest *md UNUSED,
 			return STF_INTERNAL_ERROR;
 	}
 
+	/* Send AUX support notification */
+	if (c->policy & POLICY_IKE_AUX) {
+		if (!ship_v2Ns(ISAKMP_NEXT_v2N,
+			        v2N_IKEV2_AUX_SUPPORTED,
+			        &rbody))
+			return STF_INTERNAL_ERROR;
+	}
+
 	/* Send USE_PPK Notify payload */
 	if (LIN(POLICY_PPK_ALLOW, c->policy)) {
 		if (!ship_v2Ns(ISAKMP_NEXT_v2N, v2N_USE_PPK, &rbody))
 			return STF_INTERNAL_ERROR;
 	}
+
 
 	/* Send SIGNATURE_HASH_ALGORITHMS Notify payload */
 	if (!IMPAIR(OMIT_HASH_NOTIFY_REQUEST)) {
@@ -1305,6 +1387,10 @@ stf_status ikev2_parent_inI1outR1(struct state *null_st, struct msg_digest *md)
 			st->st_seen_fragvid = TRUE;
 			break;
 
+		case v2N_IKEV2_AUX_SUPPORTED:
+			st->st_seen_aux = TRUE;
+			break;
+
 		case v2N_USE_PPK:
 			st->st_seen_ppk = TRUE;
 			break;
@@ -1479,6 +1565,14 @@ static stf_status ikev2_parent_inI1outR1_continue_tail(struct state *st,
 
 		if (!ship_v2Ns(np, v2N_IKEV2_FRAGMENTATION_SUPPORTED, &rbody))
 			return STF_INTERNAL_ERROR;
+	}
+
+	/* Send AUX support notification */
+	if (c->policy & POLICY_IKE_AUX) {
+			if (!ship_v2Ns(ISAKMP_NEXT_v2N,
+										 v2N_IKEV2_AUX_SUPPORTED,
+										 &rbody))
+					return STF_INTERNAL_ERROR;
 	}
 
 	/* Send USE_PPK Notify payload */
@@ -1892,6 +1986,10 @@ stf_status ikev2_parent_inR1outI2(struct state *st, struct msg_digest *md)
 			st->st_seen_fragvid = TRUE;
 			break;
 
+		case v2N_IKEV2_AUX_SUPPORTED:
+			st->st_seen_aux = TRUE;
+			break;
+
 		case v2N_USE_PPK:
 			st->st_seen_ppk = TRUE;
 			break;
@@ -1992,6 +2090,13 @@ static void ikev2_parent_inR1outI2_continue(struct state *st,
 			st->st_serialno));
 
 	passert(*mdp != NULL);
+
+	// XXX: Not sure if this belongs here
+	if (st->st_seen_aux) {
+		change_state(st, STATE_PARENT_IA);
+		complete_v2_state_transition(st, mdp, ikev2_parent_out_A(st));
+	}
+
 	stf_status e = ikev2_parent_inR1outI2_tail(st, *mdp, r);
 	/* replace (*mdp)->st with st ... */
 	complete_v2_state_transition((*mdp)->st, mdp, e);

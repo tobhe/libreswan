@@ -626,6 +626,7 @@ struct state {
 	struct isakmp_quirks quirks;            /* work arounds for faults in other products */
 	bool st_xauth_soft;                     /* XAUTH failed but policy is to soft fail */
 	bool st_seen_fragvid;                   /* should really use st_seen_vendorid, but no one else is */
+	bool st_seen_aux;                       /* did we receive AUX */
 	bool st_seen_hashnotify;		/* did we receive hash algo notification in IKE_INIT, then send in response as well */
 	bool st_seen_fragments;                 /* did we receive ike fragments from peer, if so use them in return as well */
 	bool st_seen_no_tfc;			/* did we receive ESP_TFC_PADDING_NOT_SUPPORTED */

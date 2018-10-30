@@ -596,6 +596,7 @@ enum state_kind {
 	/* INITIATOR states */
 	/* STATE_PARENT_I0,	** waiting for KE to finish */
 	STATE_PARENT_I1,        /* IKE_SA_INIT: sent initial message, waiting for reply */
+	STATE_PARENT_IA,        /* IKE_AUX: sent aux message, waiting for reply */
 	STATE_PARENT_I2,        /* IKE_AUTH: sent auth message, waiting for reply */
 	STATE_PARENT_I3,        /* IKE_AUTH done: received auth response */
 
@@ -607,6 +608,7 @@ enum state_kind {
 	 */
 	/* STATE_PARENT_R0,	** just starting */
 	STATE_PARENT_R1,	/* IKE_SA_INIT: sent response */
+	STATE_PARENT_RA,	/* IKE_AUX: sent response */
 	STATE_PARENT_R2,	/* IKE_AUTH: sent response */
 
 	/* IKEv2 CREATE_CHILD_SA INITIATOR states */
@@ -1034,9 +1036,11 @@ enum sa_policy_bits {
 
 	POLICY_IKE_FRAG_ALLOW_IX,
 	POLICY_IKE_FRAG_FORCE_IX,
+
 #define POLICY_IKE_FRAG_MASK	LRANGE(POLICY_IKE_FRAG_ALLOW_IX,POLICY_IKE_FRAG_FORCE_IX)
 	POLICY_NO_IKEPAD_IX,	/* pad ike packets to 4 bytes or not */
 	POLICY_MOBIKE_IX,	/* allow MOBIKE */
+	POLICY_IKE_AUX_IX,	/* Allow auxiliary exchange */
 	POLICY_PPK_ALLOW_IX,
 	POLICY_PPK_INSIST_IX,
 	POLICY_ESN_NO_IX,		/* send/accept ESNno */
@@ -1086,7 +1090,8 @@ enum sa_policy_bits {
 #define POLICY_IKE_FRAG_ALLOW	LELEM(POLICY_IKE_FRAG_ALLOW_IX)
 #define POLICY_IKE_FRAG_FORCE	LELEM(POLICY_IKE_FRAG_FORCE_IX)
 #define POLICY_NO_IKEPAD	LELEM(POLICY_NO_IKEPAD_IX)	/* pad ike packets to 4 bytes or not */
-#define POLICY_MOBIKE		LELEM(POLICY_MOBIKE_IX)	/* allow MOBIKE */
+#define POLICY_MOBIKE		LELEM(POLICY_MOBIKE_IX)		/* allow MOBIKE */
+#define POLICY_IKE_AUX	LELEM(POLICY_IKE_AUX_IX)	/* allow AUX */
 #define POLICY_PPK_ALLOW	LELEM(POLICY_PPK_ALLOW_IX)
 #define POLICY_PPK_INSIST	LELEM(POLICY_PPK_INSIST_IX)
 #define POLICY_ESN_NO		LELEM(POLICY_ESN_NO_IX)	/* accept or request ESNno */
