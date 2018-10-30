@@ -2094,7 +2094,7 @@ static void ikev2_parent_inR1outI2_continue(struct state *st,
 	// XXX: Not sure if this belongs here
 	if (st->st_seen_aux) {
 		change_state(st, STATE_PARENT_IA);
-		complete_v2_state_transition(mdp->st, mdp, ikev2_parent_out_A(st));
+		complete_v2_state_transition(st, mdp, ikev2_parent_out_A(st));
 	}
 
 	stf_status e = ikev2_parent_inR1outI2_tail(st, *mdp, r);
